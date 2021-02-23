@@ -5,6 +5,9 @@ import java.io.*;
 
 public class Calculadora implements ICalculadora {
 
+    // Implementación patron de diseño Singleton
+    public static Calculadora calculadora;
+
     // Utilidades
     private Scanner sc = new Scanner(System.in);
     private Scanner scInt = new Scanner(System.in);
@@ -15,6 +18,20 @@ public class Calculadora implements ICalculadora {
     File archivo = null;
     FileReader fr = null;
     BufferedReader br = null;
+
+
+    private Calculadora(){
+        
+    }
+
+    public static Calculadora getInstancia(){
+        if(calculadora == null){
+            calculadora = new Calculadora();
+        }
+        return calculadora;
+    }
+
+
 
     /*
      * Incia la calculadora y lee el archivo de texto con las operaciones
