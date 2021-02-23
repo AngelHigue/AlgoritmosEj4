@@ -1,3 +1,4 @@
+//Lista encadenada
 
 public class StackListaEncadenada<E> implements IStack<E> {
 

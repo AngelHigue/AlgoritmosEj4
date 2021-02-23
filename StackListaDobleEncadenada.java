@@ -1,3 +1,5 @@
+//Lista DobleEncadenada
+
 public class StackListaDobleEncadenada<E> implements IStack<E> {
 
     private class Nodo {
@@ -11,6 +13,7 @@ public class StackListaDobleEncadenada<E> implements IStack<E> {
         raiz = null;
     }
 
+    //Agrega un elemento a la lista doble encadenada
     public void push(E x) {
         int pos = 0;
         if (pos <= size() + 1) {
@@ -42,6 +45,7 @@ public class StackListaDobleEncadenada<E> implements IStack<E> {
         }
     }
 
+    //Devuleve el primer elemento
     public E peek() {
         int pos = 0;
         if (pos <= size()) {
@@ -68,7 +72,8 @@ public class StackListaDobleEncadenada<E> implements IStack<E> {
             return null;
         }
     }
-
+    
+    //Elimina el primer elemento 
     public E pop() {
         E item = peek();
         int pos = 0;
@@ -93,6 +98,7 @@ public class StackListaDobleEncadenada<E> implements IStack<E> {
         return item;
     }
 
+    //Devuelve la cantidad de elementos en la lista
     public int size() {
         int cant = 0;
         Nodo reco = raiz;
@@ -103,6 +109,8 @@ public class StackListaDobleEncadenada<E> implements IStack<E> {
         return cant;
     }
 
+
+    //Comprobar si la lista esta vacia
     public boolean empty() {
         if (raiz == null)
             return true;

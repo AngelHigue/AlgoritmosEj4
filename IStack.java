@@ -1,3 +1,5 @@
+//Interfaz Stack
+
 public interface IStack<E> 
 {
 

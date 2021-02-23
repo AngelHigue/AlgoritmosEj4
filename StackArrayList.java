@@ -1,8 +1,10 @@
+//StackArrayList
+
 import java.util.ArrayList;
 
 public class StackArrayList<E> implements IStack<E> {
 	protected ArrayList<E> data;
-
+	
 	public StackArrayList()
 	{
 		data = new ArrayList<E>();
