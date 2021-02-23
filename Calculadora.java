@@ -1,5 +1,5 @@
-import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Stack;
 
 import java.io.*;
 
@@ -19,19 +19,16 @@ public class Calculadora implements ICalculadora {
     FileReader fr = null;
     BufferedReader br = null;
 
+    private Calculadora() {
 
-    private Calculadora(){
-        
     }
 
-    public static Calculadora getInstancia(){
-        if(calculadora == null){
+    public static Calculadora getInstancia() {
+        if (calculadora == null) {
             calculadora = new Calculadora();
         }
         return calculadora;
     }
-
-
 
     /*
      * Incia la calculadora y lee el archivo de texto con las operaciones
@@ -40,46 +37,61 @@ public class Calculadora implements ICalculadora {
      */
     public void start() {
 
-        System.out.print(" :: CALCULADORA ::");
+        System.out.println(" :: CALCULADORA ::");
 
         // Implementar patron de diseño Factory para seleccionar que tipo de Stack
         // utilizara
-        System.out.print("Ingrese que Stack implementara: ");
-        System.out.print("1. ArrayList");
-        System.out.print("2. Vector");
-        System.out.print("3. Lista encadenada");
-        System.out.print("4. Lista doblemente encadenada");
+        System.out.println("Ingrese que Stack implementara: ");
+        System.out.println("1. ArrayList");
+        System.out.println("2. Vector");
+        System.out.println("3. Lista encadenada");
+        System.out.println("4. Lista doblemente encadenada");
         Integer opcionStack = scInt.nextInt();
 
         // Instanciar el tipo de Stack
         calculadoraStack = factoryStack.getStack(opcionStack);
 
-        System.out.print("Ingrese la ruta del archivo: ");
-        String src = sc.nextLine();
-        System.out.print("\n");
+        // System.out.print("Ingrese la ruta del archivo: ");
+        String src = "./datos.txt";
+        // System.out.print("\n");
 
         // Leer el archivo de texto y opera cada linea
         try {
             archivo = new File(src);
             fr = new FileReader(archivo);
             br = new BufferedReader(fr);
-
-            // Recorre todas las lineas del archivo
-            String linea;
-            while ((linea = br.readLine()) != null) {
-
-                // Convierte la operación de infix a posfix
-                String operacion = infixToPosfix(linea);
-
-                // Realiza la operación y la muestra en pantalla
-                System.out.println("Resultado: " + operarPosfix(operacion));
-
-            }
-
         } catch (Exception e) {
             System.out.println("[!] No se encontro el archivo");
         }
 
+        try {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                // Convierte la operación de infix a posfix
+                String operacion = infixToPosfix(linea);
+                // Realiza la operación y la muestra en pantalla
+                System.out.println("Resultado: " + operarPosfix(operacion));
+
+            }
+        } catch (Exception e) {
+            System.out.println("[!] No se realizo la operacion correctamente");
+        }
+        // Recorre todas las lineas del archivo
+
+    }
+
+    public int precedencia(char c) {
+        switch (c) {
+            case '+':
+            case '-':
+                return 1;
+            case '*':
+            case '/':
+                return 2;
+            case '^':
+                return 3;
+        }
+        return -1;
     }
 
     /*
@@ -91,41 +103,35 @@ public class Calculadora implements ICalculadora {
      */
     private String infixToPosfix(String linea) {
 
-        String operacionPosfix = "";
-        ArrayList<String> stack = new ArrayList<String>();
-        String[] tempLinea = linea.split(" ");
+        String resultado = "";
+        Stack<Character> stack = new Stack<>();
+        for (int i = 0; i < linea.length(); i++) {
 
-        // Recorre el contenido de la linea
-        for (int i = 0; i < tempLinea.length; i++) {
+            char c = linea.charAt(i);
 
-            // Verifica si es un numero o una instruccion
-            if (esUnNumero(tempLinea[i])) {
-                operacionPosfix += " " + tempLinea[i];
-            } else {
-
-                if (tempLinea[i] == "(") {
-                    stack.add(tempLinea[i]);
-                } else if (tempLinea[i] == ")") {
-                    int n = 0;
-                    Boolean ejecutar = true;
-                    while (ejecutar) {
-
-                        if (stack.get(n) != "(") {
-                            operacionPosfix += " " + stack.get(n);
-                        } else {
-                            ejecutar = false;
-                        }
-                        n++;
-                    }
-                } else {
-                    stack.add(tempLinea[i]);
+            // check if char is operator
+            if (precedencia(c) > 0) {
+                while (stack.isEmpty() == false && precedencia(stack.peek()) >= precedencia(c)) {
+                    resultado += stack.pop();
                 }
-
+                stack.push(c);
+            } else if (c == ')') {
+                char x = stack.pop();
+                while (x != '(') {
+                    resultado += x;
+                    x = stack.pop();
+                }
+            } else if (c == '(') {
+                stack.push(c);
+            } else {
+                // character is neither operator nor (
+                resultado += c;
             }
-
         }
-
-        return operacionPosfix;
+        for (int i = 0; i <= stack.size(); i++) {
+            resultado += stack.pop();
+        }
+        return resultado;
     }
 
     /*
@@ -136,70 +142,38 @@ public class Calculadora implements ICalculadora {
      * @return: El resultado de la operación
      */
     private int operarPosfix(String linea) {
+        Stack<Integer> calculadoraStack = new Stack<>();
 
-        // Separar el contenido de la linea en un array
-        String[] tempLinea = linea.split(" ");
+        for (int i = 0; i < linea.length(); i++) {
+            char c = linea.charAt(i);
 
-        // Recorre el contenido de la linea
-        for (int i = 0; i < tempLinea.length; i++) {
+            if (Character.isDigit(c))
+                calculadoraStack.push(c - '0');
 
-            // Verifica si es un numero o una instruccion
-            if (esUnNumero(tempLinea[i])) {
-                calculadoraStack.push(Integer.parseInt(tempLinea[i]));
-            } else {
+            else {
+                int val1 = calculadoraStack.pop();
+                int val2 = calculadoraStack.pop();
 
-                int primerNumero = 0;
-                int segundoNumero = 0;
-
-                // Comprueba que si existan suficientes numeros para operar
-                try {
-                    primerNumero = calculadoraStack.pop();
-                    segundoNumero = calculadoraStack.pop();
-                } catch (Exception e) {
-                    System.out.println("[!]");
-                }
-
-                // Mira el tipo de operador y llama al método correspondiente para realizar la
-                // operación
-                // Luego guarda el resultado en el Stack
-                switch (linea) {
-                    case "*":
-                        calculadoraStack.push(multiplicacion(primerNumero, segundoNumero));
+                switch (c) {
+                    case '+':
+                        calculadoraStack.push(val2 + val1);
                         break;
-                    case "+":
-                        calculadoraStack.push(suma(primerNumero, segundoNumero));
+
+                    case '-':
+                        calculadoraStack.push(val2 - val1);
                         break;
-                    case "-":
-                        calculadoraStack.push(resta(primerNumero, segundoNumero));
+
+                    case '/':
+                        calculadoraStack.push(val2 / val1);
                         break;
-                    case "/":
-                        calculadoraStack.push(division(primerNumero, segundoNumero));
+
+                    case '*':
+                        calculadoraStack.push(val2 * val1);
                         break;
                 }
-
             }
         }
-
         return calculadoraStack.pop();
-
-    }
-
-    /*
-     * Revisa si el dato ingresado es un numero o no
-     * 
-     * @params: el caracter a revisar
-     * 
-     * @return: Si es un numero devuelve True de lo contrario False
-     */
-    private Boolean esUnNumero(String txt) {
-        Boolean result;
-        try {
-            Integer.parseInt(txt);
-            result = true;
-        } catch (Exception e) {
-            result = false;
-        }
-        return result;
     }
 
     /*
